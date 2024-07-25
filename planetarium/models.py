@@ -40,7 +40,7 @@ class ShowSession(models.Model):
         related_name="show_sessions"
     )
     planetarium_dome = models.ForeignKey(
-        AstronomyShow,
+        PlanetariumDome,
         on_delete=models.CASCADE,
         related_name="planetarium_domes"
     )
@@ -89,7 +89,7 @@ class Ticket(models.Model):
             if not (1 <= ticket_attr_value <= count_attr):
                 raise error_to_rise(
                     {
-                        ticket_attr_name: f"{ticket_attr_name}"
+                        ticket_attr_name: f"{ticket_attr_name} "
                         f"number must be in available range: "
                         f"(1, {dome_attr_name}): "
                         f"(1, {count_attr})"
