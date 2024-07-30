@@ -3,7 +3,8 @@ from datetime import datetime
 from django.db.models import F, Count
 
 from rest_framework import viewsets, mixins
-
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 
 from .permissions import IsAdminOrIfAuthenticatedReadOnly
 
@@ -12,6 +13,7 @@ from .models import (
     ShowTheme,
     AstronomyShow,
     ShowSession,
+    Reservation,
 )
 from .serializers import (
     PlanetariumDomeSerializer,
@@ -20,6 +22,10 @@ from .serializers import (
     AstronomyShowListSerializer,
     AstronomyShowDetailSerializer,
     ShowSessionSerializer,
+    ShowSessionListSerializer,
+    ShowSessionDetailSerializer,
+    ReservationSerializer,
+    ReservationListSerializer,
 )
 
 
@@ -83,6 +89,8 @@ class AstronomyShowViewSet(
         if self.action == "retrieve":
             return AstronomyShowDetailSerializer
 
+        return AstronomyShowSerializer
+
 
 class ShowSessionViewSet(viewsets.ModelViewSet):
     queryset = (
@@ -92,9 +100,9 @@ class ShowSessionViewSet(viewsets.ModelViewSet):
         )
         .annotate(
             tickets_available=(
-                F("planetarium_dome__rows")
-                * F("planetarium_dome__seats_in_row")
-                - Count("tickets")
+                    F("planetarium_dome__rows")
+                    * F("planetarium_dome__seats_in_row")
+                    - Count("tickets")
             )
         )
     )
@@ -119,3 +127,44 @@ class ShowSessionViewSet(viewsets.ModelViewSet):
             )
 
         return queryset
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ShowSessionListSerializer
+
+        if self.action == "retrieve":
+            return ShowSessionDetailSerializer
+
+        return ShowSessionSerializer
+
+
+class ReservationPagination(PageNumberPagination):
+    page_size = 5
+    max_page_size = 100
+
+
+class ReservationViewSet(
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = Reservation.objects.prefetch_related(
+        "tickets__show_session__astronomy_show",
+        "tickets__show_session__planetarium_dome"
+    )
+
+    serializer_class = ReservationSerializer
+    pagination_class = ReservationPagination
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        return Reservation.objects.filter(user=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ReservationListSerializer
+
+        return ReservationSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
