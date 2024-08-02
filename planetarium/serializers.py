@@ -16,7 +16,7 @@ from planetarium.models import (
 class PlanetariumDomeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlanetariumDome
-        fields = ("id", "name", "seats", "seats_in_row", "capacity")
+        fields = ("id", "name", "rows", "seats_in_row", "capacity")
 
 
 class ShowThemeSerializer(serializers.ModelSerializer):
