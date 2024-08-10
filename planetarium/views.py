@@ -8,16 +8,16 @@ from rest_framework import viewsets, mixins
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 
-from .permissions import IsAdminOrIfAuthenticatedReadOnly
+from planetarium.permissions import IsAdminOrIfAuthenticatedReadOnly
 
-from .models import (
+from planetarium.models import (
     PlanetariumDome,
     ShowTheme,
     AstronomyShow,
     ShowSession,
     Reservation,
 )
-from .serializers import (
+from planetarium.serializers import (
     PlanetariumDomeSerializer,
     ShowThemeSerializer,
     AstronomyShowSerializer,
